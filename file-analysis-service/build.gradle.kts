@@ -2,7 +2,7 @@ plugins {
     id("java")
 }
 
-group = "sysdesign"
+group = "fileanalysis"
 version = "0.0.1-SNAPSHOT"
 
 repositories {
