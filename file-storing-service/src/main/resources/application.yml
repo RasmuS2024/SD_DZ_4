@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:h2:file:./data/file-storage-db
+    url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -29,3 +29,7 @@ minio:
   access-key: minioadmin
   secret-key: minioadmin
   bucket-name: student-works
+
+app:
+  analysis-service:
+    url: http://localhost:8082

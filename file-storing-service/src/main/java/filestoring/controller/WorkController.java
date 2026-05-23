@@ -1,8 +1,8 @@
-package filestorage.controller;
+package filestoring.controller;
 
-import filestorage.domain.Work;
-import filestorage.dto.FileData;
-import filestorage.service.WorkService;
+import filestoring.domain.Work;
+import filestoring.dto.FileData;
+import filestoring.service.WorkService;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
@@ -57,5 +57,11 @@ public class WorkController {
     public ResponseEntity<List<Work>> getWorksByStudent(@RequestParam String name) {
         List<Work> works = workService.getWorksByStudentName(name);
         return ResponseEntity.ok(works);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Work> getWork(@PathVariable Long id) {
+        Work work = workService.getWorkById(id);
+        return ResponseEntity.ok(work);
     }
 }

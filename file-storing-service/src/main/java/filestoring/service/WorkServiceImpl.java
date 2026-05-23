@@ -1,8 +1,9 @@
-package filestorage.service;
+package filestoring.service;
 
-import filestorage.domain.Work;
-import filestorage.dto.FileData;
-import filestorage.repository.WorkRepository;
+import filestoring.domain.Work;
+import filestoring.dto.FileData;
+import filestoring.exception.fileStoringException;
+import filestoring.repository.WorkRepository;
 import io.minio.BucketExistsArgs;
 import io.minio.GetObjectArgs;
 import io.minio.GetObjectResponse;
@@ -17,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -33,6 +35,9 @@ public class WorkServiceImpl implements WorkService {
     private final WorkRepository workRepository;
     private final MinioClient minioClient;
     private boolean bucketReady = false;
+
+    @Value("${app.analysis-service.url}")
+    private String analysisServiceUrl;
 
     @Value("${minio.bucket-name}")
     private String bucketName;
@@ -86,17 +91,32 @@ public class WorkServiceImpl implements WorkService {
         work.setStudentName(studentName);
         work.setOriginalFileName(file.getOriginalFilename());
         work.setS3Key(s3Key);
-        return workRepository.save(work);
+        Work savedWork = workRepository.save(work);
+
+        triggerAnalysis(savedWork.getId());
+
+        return savedWork;
+    }
+
+    private void triggerAnalysis(Long workId) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            String url = analysisServiceUrl + "/api/analysis/works/" + workId + "/report";
+            restTemplate.getForEntity(url, String.class);
+            log.info("Анализ для работы {} запущен", workId);
+        } catch (Exception e) {
+            log.error("Ошибка при запуске анализа для работы {}: {}", workId, e.getMessage());
+        }
     }
 
     @Override
     public FileData getWorkFile(Long workId) throws Exception {
         if (!bucketReady) {
-            throw new Exception("Файловое хранилище недоступно");
+            throw new fileStoringException("Файловое хранилище недоступно");
         }
 
         Work work = workRepository.findById(workId)
-                .orElseThrow(() -> new RuntimeException("Работа не найдена"));
+                .orElseThrow(() -> new fileStoringException("Работа не найдена"));
 
         GetObjectResponse response = minioClient.getObject(
                 GetObjectArgs.builder()
@@ -122,6 +142,14 @@ public class WorkServiceImpl implements WorkService {
 
     @Override
     public List<Work> getWorksByStudentName(String name) {
+
         return workRepository.findByStudentName(name);
+    }
+
+    @Override
+    public Work getWorkById(Long id) {
+
+        return workRepository.findById(id)
+                .orElseThrow(() -> new fileStoringException("Работа не найдена"));
     }
 }

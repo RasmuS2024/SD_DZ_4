@@ -1,4 +1,4 @@
-package filestorage.domain;
+package filestoring.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;

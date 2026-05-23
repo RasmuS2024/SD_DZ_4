@@ -1,6 +1,6 @@
-package filestorage.repository;
+package filestoring.repository;
 
-import filestorage.domain.Work;
+import filestoring.domain.Work;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

@@ -1,0 +1,16 @@
+FROM eclipse-temurin:17-jre-alpine
+
+WORKDIR /app
+
+RUN apk add --no-cache curl
+
+COPY build/libs/api-gateway-*.jar app.jar
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup && \
+    mkdir -p /app/data && chown -R appuser:appgroup /app
+
+USER appuser
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -1,7 +1,7 @@
-package filestorage.service;
+package filestoring.service;
 
-import filestorage.domain.Work;
-import filestorage.dto.FileData;
+import filestoring.domain.Work;
+import filestoring.dto.FileData;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
@@ -13,5 +13,7 @@ public interface WorkService {
     FileData getWorkFile(Long workId) throws Exception;
 
     List<Work> getWorksByStudentName(String name);
+
+    Work getWorkById(Long id);
 
 }

@@ -4,17 +4,11 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
 }
 
-group = "gateway"
-version = "0.0.1-SNAPSHOT"
-
-repositories {
-    mavenCentral()
-}
-
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
-    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation(platform("org.springframework.cloud:spring-cloud-dependencies:2025.0.0"))
+
+    implementation("org.springframework.cloud:spring-cloud-starter-gateway-server-webflux")
+    implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.5.0")
 
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")

@@ -11,20 +11,7 @@ spring:
           uri: http://file-storing-service:8081
           predicates:
             - Path=/api/works/**, /h2-console/**
-          filters:
-            - StripPrefix=0
-
         - id: file-analysis-service
           uri: http://file-analysis-service:8082
           predicates:
             - Path=/api/analysis/**
-          filters:
-            - StripPrefix=0
-
-springdoc:
-  swagger-ui:
-    urls:
-      - name: file-storing-service
-        url: /file-storing-service/v3/api-docs
-      - name: file-analysis-service
-        url: /file-analysis-service/v3/api-docs

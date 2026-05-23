@@ -1,4 +1,4 @@
-package filestorage.dto;
+package filestoring.dto;
 
 import java.io.InputStream;
 
