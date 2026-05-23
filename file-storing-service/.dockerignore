@@ -1,0 +1,11 @@
+.gradle/
+build/
+!build/libs/
+.idea/
+*.iml
+*.log
+*.tmp
+.git/
+.gitignore
+docker-compose.yml
+Dockerfile

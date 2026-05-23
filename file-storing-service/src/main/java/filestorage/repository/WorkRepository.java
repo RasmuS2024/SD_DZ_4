@@ -4,9 +4,7 @@ import filestorage.domain.Work;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface WorkRepository extends JpaRepository<Work, Long> {
     List<Work> findByStudentName(String name);
-    Optional<Work> findByFileName(String name);
 }
