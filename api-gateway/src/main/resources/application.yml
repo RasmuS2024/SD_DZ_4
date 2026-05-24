@@ -9,34 +9,26 @@ spring:
       server:
         webflux:
           routes:
-            - id: file-storing-service
-              uri: http://file-storing-service:8081
+            - id: file-storing-service-api
+              uri: http://localhost:8081
               predicates:
                 - Path=/api/works/**, /h2-console/**
+            - id: file-analysis-service-api
+              uri: http://localhost:8082
+              predicates:
+                - Path=/api/analysis/**
             - id: file-storing-service-docs
               uri: http://file-storing-service:8081
               predicates:
                 - Path=/file-storing-service/v3/api-docs
               filters:
                 - RewritePath=/file-storing-service/v3/api-docs, /v3/api-docs
-            - id: file-analysis-service
-              uri: http://file-analysis-service:8082
-              predicates:
-                - Path=/api/analysis/**
             - id: file-analysis-service-docs
               uri: http://file-analysis-service:8082
               predicates:
                 - Path=/file-analysis-service/v3/api-docs
               filters:
                 - RewritePath=/file-analysis-service/v3/api-docs, /v3/api-docs
-            - id: openapi
-              uri: http://localhost:${server.port}
-              predicates:
-                - Path=/v3/api-docs/**
-            - id: swagger-ui
-              uri: http://localhost:${server.port}
-              predicates:
-                - Path=/swagger-ui/**
 
 springdoc:
   swagger-ui:

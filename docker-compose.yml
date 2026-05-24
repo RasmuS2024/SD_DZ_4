@@ -2,38 +2,46 @@ services:
   file-storing-db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: file_storing
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: app
+      POSTGRES_DB: ${FILE_STORING_DB_NAME}
+      POSTGRES_USER: ${FILE_STORING_DB_USER}
+      POSTGRES_PASSWORD: ${FILE_STORING_DB_PASSWORD}
     volumes:
       - file-storing-data:/var/lib/postgresql/data
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U app -d file_storing" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${FILE_STORING_DB_USER} -d ${FILE_STORING_DB_NAME}" ]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
 
   file-analysis-db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: file_analysis
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: app
+      POSTGRES_DB: ${FILE_ANALYSIS_DB_NAME}
+      POSTGRES_USER: ${FILE_ANALYSIS_DB_USER}
+      POSTGRES_PASSWORD: ${FILE_ANALYSIS_DB_PASSWORD}
     volumes:
       - file-analysis-data:/var/lib/postgresql/data
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U app -d file_analysis" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${FILE_ANALYSIS_DB_USER} -d ${FILE_ANALYSIS_DB_NAME}" ]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
 
   minio:
     image: minio/minio:latest
     container_name: minio
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "${MINIO_PORT}:9000"
+      - "${MINIO_CONSOLE_PORT}:9001"
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     command: server /data --console-address ":9001"
     volumes:
       - minio-data:/data
@@ -41,17 +49,21 @@ services:
       - app-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
 
   file-storing-service:
+    restart: unless-stopped
     build:
       context: ./file-storing-service
       dockerfile: Dockerfile
+      args:
+        DOCKER_BUILDKIT: 1
     container_name: file-storing-service
     ports:
-      - "8081:8081"
+      - "${FILE_STORING_PORT}:8081"
     environment:
       SPRING_PROFILES_ACTIVE: docker
     depends_on:
@@ -61,14 +73,23 @@ services:
         condition: service_healthy
     networks:
       - app-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8081/actuator/health" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 60s
 
   file-analysis-service:
+    restart: unless-stopped
     build:
       context: ./file-analysis-service
       dockerfile: Dockerfile
+      args:
+        DOCKER_BUILDKIT: 1
     container_name: file-analysis-service
     ports:
-      - "8082:8082"
+      - "${FILE_ANALYSIS_PORT}:8082"
     environment:
       SPRING_PROFILES_ACTIVE: docker
     depends_on:
@@ -76,19 +97,30 @@ services:
         condition: service_healthy
     networks:
       - app-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8082/actuator/health" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 60s
 
   api-gateway:
+    restart: unless-stopped
     build:
       context: ./api-gateway
       dockerfile: Dockerfile
+      args:
+        DOCKER_BUILDKIT: 1
     container_name: api-gateway
     ports:
-      - "8080:8080"
+      - "${GATEWAY_PORT}:8080"
     environment:
       SPRING_PROFILES_ACTIVE: docker
     depends_on:
-      - file-storing-service
-      - file-analysis-service
+      file-storing-service:
+        condition: service_healthy
+      file-analysis-service:
+        condition: service_healthy
     networks:
       - app-network
 

@@ -13,7 +13,7 @@
 
 Для хранения загруженных файлов используется хранилище MinIO, в режиме разработки удобный доступ к хранилищу через веб-интерфейс.
 
-Для хранения данных о загруженных файлах и результатах анализа используется СУБД H2.
+Для хранения данных о загруженных файлах и результатах анализа используется СУБД PostgreSQL (для каждого сервиса своя).
 
 После загрузки файла в File Storing Service данные о загруженном файле сохраняются в БД сервиса,
 запускается сервис анализа File Analisys Service, который проверяет размер и расширение файла и 
@@ -21,4 +21,18 @@
 Доступ к API обоих сервисов реализован через сревис API Gateway.
 
 
+## Технологии
+
+- Java 17
+- Spring Boot 3.5.x
+- Spring Cloud Gateway
+- Spring Data JPA + Hibernate
+- PostgreSQL 16 (Alpine)
+- MinIO (S3-совместимое хранилище)
+- Resilience4j (Circuit Breaker + Retry)
+- SpringDoc OpenAPI 2.8.x (Swagger)
+- Docker + Docker Compose
+- Gradle
+- Lombok
+- JUnit 5 + Mockito + MockWebServer
 
