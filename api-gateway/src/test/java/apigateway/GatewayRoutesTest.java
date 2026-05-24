@@ -27,7 +27,7 @@ class GatewayRoutesTest {
 
     @BeforeAll
     static void setUp() throws IOException {
-        fileStoringMock.start(18081);   // фиксированный порт для простоты
+        fileStoringMock.start(18081);
         fileAnalysisMock.start(18082);
     }
 
@@ -37,7 +37,6 @@ class GatewayRoutesTest {
         fileAnalysisMock.shutdown();
     }
 
-    // Подставляем URI в конфигурацию маршрутов
     @DynamicPropertySource
     static void registerProperties(DynamicPropertyRegistry registry) {
         registry.add("app.routes.file-storing.uri", () -> "http://localhost:18081");

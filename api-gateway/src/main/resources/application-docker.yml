@@ -41,6 +41,14 @@ spring:
                 - Path=/file-analysis-service/api/**
               filters:
                 - StripPrefix=1
+            - id: openapi
+              uri: http://localhost:${server.port}
+              predicates:
+                - Path=/v3/api-docs/**
+            - id: swagger-ui
+              uri: http://localhost:${server.port}
+              predicates:
+                - Path=/swagger-ui/**
 
 springdoc:
   swagger-ui:

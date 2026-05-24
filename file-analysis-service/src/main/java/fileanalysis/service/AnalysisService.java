@@ -84,7 +84,7 @@ public class AnalysisService {
         ResponseEntity<WorkMetadata> response = restTemplate.exchange(
                 url, HttpMethod.GET, null, WorkMetadata.class);
         return Optional.ofNullable(response.getBody())
-                .orElseThrow(() -> new FileAnalysisException("Работа не найдена в File Storage Service"));
+                .orElseThrow(() -> new FileAnalysisException("Работа не найдена в File Storing Service"));
     }
 
     private byte[] downloadFile(Long workId) {

@@ -9,5 +9,5 @@ public class WorkMetadata {
     private String studentName;
     private String originalFileName;
     private String s3Key;
-    private LocalDateTime uploadedDateTime;
+    private LocalDateTime createdAt;
 }

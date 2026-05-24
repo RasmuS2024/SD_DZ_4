@@ -1,4 +1,30 @@
 services:
+  file-storing-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: file_storing
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+    volumes:
+      - file-storing-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U app -d file_storing" ]
+
+  file-analysis-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: file_analysis
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+    volumes:
+      - file-analysis-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U app -d file_analysis" ]
+
   minio:
     image: minio/minio:latest
     container_name: minio
@@ -31,6 +57,8 @@ services:
     depends_on:
       minio:
         condition: service_healthy
+      file-storing-db:
+        condition: service_healthy
     networks:
       - app-network
 
@@ -43,6 +71,9 @@ services:
       - "8082:8082"
     environment:
       SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      file-analysis-db:
+        condition: service_healthy
     networks:
       - app-network
 
@@ -63,6 +94,8 @@ services:
 
 volumes:
   minio-data:
+  file-storing-data:
+  file-analysis-data:
 
 networks:
   app-network:

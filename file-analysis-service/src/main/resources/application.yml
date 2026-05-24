@@ -6,23 +6,16 @@ spring:
     name: file-analysis-service
 
   datasource:
-    url: jdbc:h2:mem:analysisdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:postgresql://localhost:5432/file_analysis
+    driver-class-name: org.postgresql.Driver
+    username: app
+    password: app
 
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
-
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-      settings:
-        web-allow-others: true
 
 app:
   file-storing-service:
@@ -37,3 +30,5 @@ app:
 springdoc:
   api-docs:
     path: /v3/api-docs
+  swagger-ui:
+    enabled: false

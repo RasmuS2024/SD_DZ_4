@@ -33,7 +33,7 @@ public class Work {
     private String s3Key;
 
     @CreationTimestamp
-    @Column(name = "uploaded_dt", updatable = false)
-    private LocalDateTime uploadedDateTime;
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 
 }
