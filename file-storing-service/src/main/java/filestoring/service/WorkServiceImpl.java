@@ -2,7 +2,7 @@ package filestoring.service;
 
 import filestoring.domain.Work;
 import filestoring.dto.FileData;
-import filestoring.exception.fileStoringException;
+import filestoring.exception.FileStoringException;
 import filestoring.repository.WorkRepository;
 import io.minio.BucketExistsArgs;
 import io.minio.GetObjectArgs;
@@ -14,8 +14,7 @@ import io.minio.StatObjectArgs;
 import io.minio.StatObjectResponse;
 import io.minio.errors.MinioException;
 import jakarta.annotation.PostConstruct;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -27,11 +26,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class WorkServiceImpl implements WorkService {
-
-    private static final Logger log = LoggerFactory.getLogger(WorkServiceImpl.class);
-
     private final WorkRepository workRepository;
     private final MinioClient minioClient;
     private boolean bucketReady = false;
@@ -112,11 +109,11 @@ public class WorkServiceImpl implements WorkService {
     @Override
     public FileData getWorkFile(Long workId) throws Exception {
         if (!bucketReady) {
-            throw new fileStoringException("Файловое хранилище недоступно");
+            throw new FileStoringException("Файловое хранилище недоступно");
         }
 
         Work work = workRepository.findById(workId)
-                .orElseThrow(() -> new fileStoringException("Работа не найдена"));
+                .orElseThrow(() -> new FileStoringException("Работа не найдена"));
 
         GetObjectResponse response = minioClient.getObject(
                 GetObjectArgs.builder()
@@ -150,6 +147,6 @@ public class WorkServiceImpl implements WorkService {
     public Work getWorkById(Long id) {
 
         return workRepository.findById(id)
-                .orElseThrow(() -> new fileStoringException("Работа не найдена"));
+                .orElseThrow(() -> new FileStoringException("Работа не найдена"));
     }
 }

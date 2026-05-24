@@ -4,7 +4,7 @@ import fileanalysis.config.FileProperties;
 import fileanalysis.domain.AnalysisReport;
 import fileanalysis.dto.ReportResponse;
 import fileanalysis.dto.WorkMetadata;
-import fileanalysis.exception.fileAnalysisException;
+import fileanalysis.exception.FileAnalysisException;
 import fileanalysis.repository.AnalysisReportRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,10 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -81,7 +84,7 @@ public class AnalysisService {
         ResponseEntity<WorkMetadata> response = restTemplate.exchange(
                 url, HttpMethod.GET, null, WorkMetadata.class);
         return Optional.ofNullable(response.getBody())
-                .orElseThrow(() -> new fileAnalysisException("Работа не найдена в File Storage Service"));
+                .orElseThrow(() -> new FileAnalysisException("Работа не найдена в File Storage Service"));
     }
 
     private byte[] downloadFile(Long workId) {
@@ -91,7 +94,7 @@ public class AnalysisService {
         try {
             return Objects.requireNonNull(response.getBody()).getInputStream().readAllBytes();
         } catch (IOException e) {
-            throw new fileAnalysisException("Ошибка при скачивании файла", e);
+            throw new FileAnalysisException("Ошибка при скачивании файла", e);
         }
     }
 

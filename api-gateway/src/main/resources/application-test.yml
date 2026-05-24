@@ -1,0 +1,12 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: file-storing-service
+          uri: ${app.routes.file-storing.uri}
+          predicates:
+            - Path=/api/works/**
+        - id: file-analysis-service
+          uri: ${app.routes.file-analysis.uri}
+          predicates:
+            - Path=/api/analysis/**

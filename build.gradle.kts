@@ -1,7 +1,8 @@
 plugins {
     java
     id("org.springframework.boot") version "3.5.0" apply false
-    id("io.spring.dependency-management") version "1.1.7"
+    id("io.spring.dependency-management") version "1.1.7" apply false
+    id("checkstyle")
 }
 
 allprojects {
@@ -10,6 +11,22 @@ allprojects {
 
     repositories {
         mavenCentral()
+    }
+
+    apply(plugin = "checkstyle")
+
+    configure<org.gradle.api.plugins.quality.CheckstyleExtension> {
+        toolVersion = "13.4.1"
+        configFile = rootProject.file("config/checkstyle/checkstyle.xml")
+        isIgnoreFailures = false
+        maxWarnings = 0
+    }
+
+    tasks.withType<Checkstyle>().configureEach {
+        reports {
+            xml.required.set(false)
+            html.required.set(true)
+        }
     }
 }
 

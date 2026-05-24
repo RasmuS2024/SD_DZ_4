@@ -27,3 +27,13 @@ spring:
 app:
   file-storing-service:
     url: http://file-storing-service:8081
+  file:
+    max-size: 1048576
+    allowed-formats:
+      - pdf
+      - docx
+      - txt
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs

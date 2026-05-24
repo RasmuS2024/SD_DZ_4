@@ -6,20 +6,29 @@ spring:
     name: api-gateway
   cloud:
     gateway:
-      routes:
-        - id: file-storing-service
-          uri: http://file-storing-service:8081
-          predicates:
-            - Path=/api/works/**, /h2-console/**
-          filters:
-            - StripPrefix=0
-
-        - id: file-analysis-service
-          uri: http://file-analysis-service:8082
-          predicates:
-            - Path=/api/analysis/**
-          filters:
-            - StripPrefix=0
+      server:
+        webflux:
+          routes:
+            - id: file-storing-service
+              uri: http://file-storing-service:8081
+              predicates:
+                - Path=/api/works/**, /h2-console/**
+            - id: file-storing-service-docs
+              uri: http://file-storing-service:8081
+              predicates:
+                - Path=/file-storing-service/v3/api-docs
+              filters:
+                - RewritePath=/file-storing-service/v3/api-docs, /v3/api-docs
+            - id: file-analysis-service
+              uri: http://file-analysis-service:8082
+              predicates:
+                - Path=/api/analysis/**
+            - id: file-analysis-service-docs
+              uri: http://file-analysis-service:8082
+              predicates:
+                - Path=/file-analysis-service/v3/api-docs
+              filters:
+                - RewritePath=/file-analysis-service/v3/api-docs, /v3/api-docs
 
 springdoc:
   swagger-ui:

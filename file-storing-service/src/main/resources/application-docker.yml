@@ -1,3 +1,6 @@
+server:
+  port: 8081
+
 spring:
   application:
     name: file-storing-service
@@ -31,9 +34,10 @@ minio:
   secret-key: minioadmin
   bucket-name: student-works
 
-server:
-  port: 8081
-
 app:
   analysis-service:
     url: http://file-analysis-service:8082
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs

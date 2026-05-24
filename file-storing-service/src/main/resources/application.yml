@@ -33,3 +33,7 @@ minio:
 app:
   analysis-service:
     url: http://localhost:8082
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
