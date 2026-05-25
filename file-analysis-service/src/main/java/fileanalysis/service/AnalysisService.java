@@ -5,14 +5,17 @@ import fileanalysis.domain.AnalysisReport;
 import fileanalysis.dto.ReportResponse;
 import fileanalysis.dto.WorkMetadata;
 import fileanalysis.exception.FileAnalysisException;
+import fileanalysis.exception.WorkNotFoundException;
 import fileanalysis.repository.AnalysisReportRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -81,18 +84,30 @@ public class AnalysisService {
 
     private WorkMetadata getWorkMetadata(Long workId) {
         String url = fileStoringUrl + "/api/works/" + workId;
-        ResponseEntity<WorkMetadata> response = restTemplate.exchange(
-                url, HttpMethod.GET, null, WorkMetadata.class);
-        return Optional.ofNullable(response.getBody())
-                .orElseThrow(() -> new FileAnalysisException("Работа не найдена в File Storing Service"));
+        try {
+            ResponseEntity<WorkMetadata> response = restTemplate.exchange(
+                    url, HttpMethod.GET, null, WorkMetadata.class);
+            return Optional.ofNullable(response.getBody())
+                    .orElseThrow(() -> new WorkNotFoundException(workId));
+        } catch (HttpClientErrorException e) {
+            if (HttpStatus.NOT_FOUND.equals(e.getStatusCode())) {
+                throw new WorkNotFoundException(workId, e);
+            }
+            throw e;
+        }
     }
 
     private byte[] downloadFile(Long workId) {
         String url = fileStoringUrl + "/api/works/" + workId + "/file";
-        ResponseEntity<Resource> response = restTemplate.exchange(
-                url, HttpMethod.GET, null, Resource.class);
         try {
+            ResponseEntity<Resource> response = restTemplate.exchange(
+                    url, HttpMethod.GET, null, Resource.class);
             return Objects.requireNonNull(response.getBody()).getInputStream().readAllBytes();
+        } catch (HttpClientErrorException e) {
+            if (HttpStatus.NOT_FOUND.equals(e.getStatusCode())) {
+                throw new WorkNotFoundException(workId, e);
+            }
+            throw e;
         } catch (IOException e) {
             throw new FileAnalysisException("Ошибка при скачивании файла", e);
         }

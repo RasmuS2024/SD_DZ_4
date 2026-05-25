@@ -2,7 +2,9 @@ package filestoring.controller;
 
 import filestoring.domain.Work;
 import filestoring.dto.FileData;
+import filestoring.exception.FileStoringException;
 import filestoring.service.WorkService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -80,6 +82,33 @@ class WorkControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.originalFileName").value("test.txt"));
+    }
+
+    @Test
+    @DisplayName("Загрузка: 400 при пустом имени студента")
+    void uploadWork_shouldReturn400_whenStudentNameBlank() throws Exception {
+        // /arrange
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "test.txt", MediaType.TEXT_PLAIN_VALUE, "content".getBytes());
+
+        // /act & /assert
+        mockMvc.perform(multipart("/api/works")
+                        .file(file)
+                        .param("studentName", ""))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Получение работы: 404 когда не найдена")
+    void getWork_shouldReturn404_whenWorkNotFound() throws Exception {
+        // /arrange
+        when(workService.getWorkById(99L)).thenThrow(new FileStoringException("Работа не найдена"));
+
+        // /act & /assert
+        mockMvc.perform(get("/api/works/99"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Не найдено"));
     }
 
     @Test

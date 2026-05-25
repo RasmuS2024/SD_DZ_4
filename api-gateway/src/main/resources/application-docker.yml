@@ -13,22 +13,56 @@ spring:
               uri: http://file-storing-service:8081
               predicates:
                 - Path=/api/works/**, /h2-console/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: fileStoringCircuitBreaker
+                    fallbackUri: forward:/fallback/file-storing
+                - name: Retry
+                  args:
+                    retries: 3
+                    statuses: BAD_GATEWAY, SERVICE_UNAVAILABLE
+
             - id: file-analysis-service-api
               uri: http://file-analysis-service:8082
               predicates:
                 - Path=/api/analysis/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: fileAnalysisCircuitBreaker
+                    fallbackUri: forward:/fallback/file-analysis
+                - name: Retry
+                  args:
+                    retries: 3
+                    statuses: BAD_GATEWAY, SERVICE_UNAVAILABLE
+
             - id: file-storing-service-docs
               uri: http://file-storing-service:8081
               predicates:
                 - Path=/file-storing-service/v3/api-docs
               filters:
                 - RewritePath=/file-storing-service/v3/api-docs, /v3/api-docs
+
             - id: file-analysis-service-docs
               uri: http://file-analysis-service:8082
               predicates:
                 - Path=/file-analysis-service/v3/api-docs
               filters:
                 - RewritePath=/file-analysis-service/v3/api-docs, /v3/api-docs
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10000
+        permittedNumberOfCallsInHalfOpenState: 3
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 5s
 
 springdoc:
   swagger-ui:
@@ -42,7 +76,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health,circuitbreakers
   endpoint:
     health:
       show-details: always

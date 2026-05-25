@@ -3,6 +3,7 @@ plugins {
     id("org.springframework.boot") version "3.5.13" apply false
     id("io.spring.dependency-management") version "1.1.7" apply false
     id("checkstyle")
+    id("jacoco")
 }
 
 allprojects {
@@ -32,6 +33,7 @@ allprojects {
 
 subprojects {
     apply(plugin = "java")
+    apply(plugin = "jacoco")
 
     java {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -53,5 +55,31 @@ subprojects {
 
     tasks.test {
         useJUnitPlatform()
+        finalizedBy(tasks.jacocoTestReport)
+    }
+
+    tasks.jacocoTestReport {
+        dependsOn(tasks.test)
+        reports {
+            xml.required = true
+            html.required = true
+        }
+    }
+}
+
+tasks.register<JacocoReport>("jacocoRootReport") {
+    dependsOn(subprojects.map { it.tasks.named("test") })
+
+    subprojects.forEach { sub ->
+        sub.plugins.withId("java") {
+            sourceDirectories.from(sub.sourceSets.main.get().allSource.srcDirs)
+            classDirectories.from(sub.sourceSets.main.get().output)
+            executionData.from(sub.fileTree("build/jacoco") { include("*.exec") })
+        }
+    }
+
+    reports {
+        xml.required = true
+        html.required = true
     }
 }

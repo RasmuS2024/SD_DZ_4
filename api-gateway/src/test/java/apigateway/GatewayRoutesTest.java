@@ -3,32 +3,34 @@ package apigateway;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.io.IOException;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
+@AutoConfigureWebTestClient
 class GatewayRoutesTest {
 
-    private static final MockWebServer fileStoringMock = new MockWebServer();
-    private static final MockWebServer fileAnalysisMock = new MockWebServer();
+    private static final MockWebServer fileStoringMock;
+    private static final MockWebServer fileAnalysisMock;
 
-    @BeforeAll
-    static void setUp() throws IOException {
-        fileStoringMock.start(18081);
-        fileAnalysisMock.start(18082);
+    static {
+        try {
+            fileStoringMock = new MockWebServer();
+            fileStoringMock.start();
+            fileAnalysisMock = new MockWebServer();
+            fileAnalysisMock.start();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to start MockWebServer", e);
+        }
     }
 
     @AfterAll
@@ -39,48 +41,50 @@ class GatewayRoutesTest {
 
     @DynamicPropertySource
     static void registerProperties(DynamicPropertyRegistry registry) {
-        registry.add("app.routes.file-storing.uri", () -> "http://localhost:18081");
-        registry.add("app.routes.file-analysis.uri", () -> "http://localhost:18082");
+        registry.add("app.routes.file-storing.uri",
+                () -> "http://localhost:" + fileStoringMock.getPort());
+        registry.add("app.routes.file-analysis.uri",
+                () -> "http://localhost:" + fileAnalysisMock.getPort());
     }
 
     @Autowired
-    private TestRestTemplate restTemplate;
+    private WebTestClient webTestClient;
 
     @Test
     void shouldRouteWorksRequestsToFileStoringService() {
-        // given
         fileStoringMock.enqueue(new MockResponse()
                 .setResponseCode(200)
                 .setBody("{\"id\":1, \"originalFileName\":\"test.pdf\"}")
                 .addHeader("Content-Type", "application/json"));
 
-        // when
-        ResponseEntity<String> response = restTemplate.getForEntity("/api/works/1", String.class);
-
-        // then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).contains("test.pdf");
+        webTestClient.get()
+                .uri("/api/works/1")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.originalFileName").isEqualTo("test.pdf");
     }
 
     @Test
     void shouldRouteAnalysisRequestsToFileAnalysisService() {
-        // given
         fileAnalysisMock.enqueue(new MockResponse()
                 .setResponseCode(200)
                 .setBody("{\"status\":\"принято\"}")
                 .addHeader("Content-Type", "application/json"));
 
-        // when
-        ResponseEntity<String> response = restTemplate.getForEntity("/api/analysis/works/1/report", String.class);
-
-        // then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).contains("принято");
+        webTestClient.get()
+                .uri("/api/analysis/works/1/report")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo("принято");
     }
 
     @Test
     void shouldReturn404ForUnknownRoutes() {
-        ResponseEntity<String> response = restTemplate.getForEntity("/unknown", String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        webTestClient.get()
+                .uri("/unknown")
+                .exchange()
+                .expectStatus().isNotFound();
     }
 }
