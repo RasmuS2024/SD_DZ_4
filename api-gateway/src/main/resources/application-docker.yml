@@ -12,7 +12,7 @@ spring:
             - id: file-storing-service-api
               uri: http://file-storing-service:8081
               predicates:
-                - Path=/api/works/**, /h2-console/**
+                - Path=/api/works/**
               filters:
                 - name: CircuitBreaker
                   args:

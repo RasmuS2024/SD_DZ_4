@@ -87,11 +87,9 @@ class WorkControllerTest {
     @Test
     @DisplayName("Загрузка: 400 при пустом имени студента")
     void uploadWork_shouldReturn400_whenStudentNameBlank() throws Exception {
-        // /arrange
         MockMultipartFile file = new MockMultipartFile(
                 "file", "test.txt", MediaType.TEXT_PLAIN_VALUE, "content".getBytes());
 
-        // /act & /assert
         mockMvc.perform(multipart("/api/works")
                         .file(file)
                         .param("studentName", ""))
@@ -101,10 +99,8 @@ class WorkControllerTest {
     @Test
     @DisplayName("Получение работы: 404 когда не найдена")
     void getWork_shouldReturn404_whenWorkNotFound() throws Exception {
-        // /arrange
         when(workService.getWorkById(99L)).thenThrow(new FileStoringException("Работа не найдена"));
 
-        // /act & /assert
         mockMvc.perform(get("/api/works/99"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
