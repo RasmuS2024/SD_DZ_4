@@ -123,9 +123,6 @@ File Analysis Service → File Storing Service: GET `/api/works/{workId}/file` �
 
 `/file-analysis-service/v3/api-docs` → File Analysis Service (порт 8082), фильтр: RewritePath.
 
-
-Вот отформатированный текст без таблиц:
-
 ## 4. API-эндпоинты
 
 **File Storing Service** (через Gateway: `http://localhost:8080`)

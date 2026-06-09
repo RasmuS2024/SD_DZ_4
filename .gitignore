@@ -44,3 +44,9 @@ bin/
 
 ### Secrets ###
 .env
+
+### Tests Leaks ###
+gitleaks-report.json
+grype-report.json
+sbom.json
+semgrep-report.json
